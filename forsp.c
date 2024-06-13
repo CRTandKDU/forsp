@@ -62,9 +62,9 @@ struct obj
 typedef struct state state_t;
 struct state
 {
-  char  * input_str;             // input data string used by read()
-  size_t  input_len;             // input data length used by read()
-  size_t  input_pos;             // input data position used by read()
+  char  * input_str;             // input data string used by forsp_read()
+  size_t  input_len;             // input data length used by forsp_read()
+  size_t  input_pos;             // input data position used by forsp_read()
 
   obj_t * nil;                   // nil: ()
   obj_t * read_stack;            // defered obj to emit from read
@@ -235,7 +235,7 @@ void skip_white_and_comments(void)
   }
 }
 
-obj_t *read(void);
+obj_t *forsp_read(void);
 
 obj_t *read_list(void)
 {
@@ -247,7 +247,7 @@ obj_t *read_list(void)
       return state->nil;
     }
   }
-  obj_t *first = read();
+  obj_t *first = forsp_read();
   obj_t *second = read_list();
   return make_pair(first, second);
 }
@@ -285,7 +285,7 @@ obj_t *read_scalar(void)
   }
 }
 
-obj_t *read(void)
+obj_t *forsp_read(void)
 {
   obj_t *read_stack = state->read_stack;
   if (read_stack) {
@@ -296,7 +296,7 @@ obj_t *read(void)
   skip_white_and_comments();
 
   char c = peek();
-  if (!c) FAIL("End of input: could not read()"); // FIXME: BETTER SOLUTION??
+  if (!c) FAIL("End of input: could not forsp_read()"); // FIXME: BETTER SOLUTION??
 
   // A qutoe?
   if (c == '\'') {
@@ -312,7 +312,7 @@ obj_t *read(void)
     s = make_pair(read_scalar(), s);
     s = make_pair(state->atom_quote, s);
     state->read_stack = s;
-    return read(); // tail-call to dump the read stack
+    return forsp_read(); // tail-call to dump the read stack
   }
 
   // A pop?
@@ -323,7 +323,7 @@ obj_t *read(void)
     s = make_pair(read_scalar(), s);
     s = make_pair(state->atom_quote, s);
     state->read_stack = s;
-    return read(); // tail-call to dump the read stack
+    return forsp_read(); // tail-call to dump the read stack
   }
 
   // Read a list?
@@ -512,7 +512,7 @@ void prim_car(obj_t **_)    { push(car(pop())); }
 void prim_cdr(obj_t **_)    { push(cdr(pop())); }
 void prim_cswap(obj_t **_)  { if (pop() == state->atom_true) { obj_t *a, *b; a = pop(); b = pop(); push(a); push(b); } }
 void prim_tag(obj_t **_)    { push(make_num(pop()->tag)); }
-void prim_read(obj_t **_)   { push(read()); }
+void prim_read(obj_t **_)   { push(forsp_read()); }
 void prim_print(obj_t **_)  { print(pop()); }
 
 /* Extra primitives */
@@ -537,30 +537,31 @@ void prim_ptr_from_obj(obj_t **_) { push(make_num((int64_t)pop())); }
  * Misc
  ******************************************************************/
 
-static char *load_file(const char *filename)
-{
-  FILE *fp = fopen(filename, "r");
-  if (!fp) FAIL("Failed to open file: '%s'\n", filename);
+/* static char *load_file(const char *filename) */
+/* { */
+/*   FILE *fp = fopen(filename, "r"); */
+/*   if (!fp) FAIL("Failed to open file: '%s'\n", filename); */
 
-  fseek(fp, 0, SEEK_END);
-  size_t file_size = ftell(fp);
-  fseek(fp, 0, SEEK_SET);
+/*   fseek(fp, 0, SEEK_END); */
+/*   size_t file_size = ftell(fp); */
+/*   fseek(fp, 0, SEEK_SET); */
 
-  char *mem = malloc(file_size+1);
-  size_t n = fread(mem, 1, file_size, fp);
-  if (n != file_size) FAIL("Failed to read file");
+/*   char *mem = malloc(file_size+1); */
+/*   size_t n = fread(mem, 1, file_size, fp); */
+/*   if (n != file_size) FAIL("Failed to read file"); */
 
-  mem[file_size] = 0;
-  return mem;
-}
+/*   mem[file_size] = 0; */
+/*   return mem; */
+/* } */
 
 /*******************************************************************
  * Interpretor
  ******************************************************************/
 
-void setup(const char *input_path)
+void setup( char *input_path )
 {
-  state->input_str = load_file(input_path);
+  /* state->input_str = load_file(input_path); */
+  state->input_str = input_path;
   state->input_len = strlen(state->input_str);
   state->input_pos = 0;
 
@@ -612,14 +613,27 @@ void setup(const char *input_path)
 
 int main(int argc, char *argv[])
 {
-  if (argc != 2) {
-    fprintf(stderr, "usage: %s <path>\n", argv[0]);
+  /* if (argc != 2) { */
+  /*   fprintf(stderr, "usage: %s <path>\n", argv[0]); */
+  /*   return 1; */
+  /* } */
+  /* setup(argv[1]); */
+
+  /* obj_t *obj = forsp_read(); */
+  /* compute(obj, state->env); */
+  
+  
+  if( 2 != argc ){
+    fprintf( stderr, "usage: %s <forsp-expression>\n", argv[0] );
     return 1;
   }
-  setup(argv[1]);
 
-  obj_t *obj = read();
+  char *mem = (char *) malloc( 1 + strlen( argv[1] ) );
+  mem = strcpy( mem, argv[1] );
+  setup( mem );
+  obj_t *obj = forsp_read();
   compute(obj, state->env);
-
+  free( mem );
+  
   return 1;
 }
