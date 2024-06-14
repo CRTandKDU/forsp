@@ -5,5 +5,8 @@ LDFLAGS =
 CC	= gcc
 CFLAGS  = $(GCCFLAGS)
 
+wasm: forsp.c
+	emcc $(EMCCFLAGS) -o forsp.js forsp.c
+
 forsp: forsp.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o forsp forsp.c 
