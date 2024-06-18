@@ -6,7 +6,7 @@
 
 ;;; Commentary:
 
-;; This library provides some utilities when forsping, e.g.
+;; This library provides some utilities when forsping, e.g. for now:
 ;;     <M-x forsp-eval-region>
 ;;
 ;; 

@@ -1,3 +1,12 @@
+/* File: forsp.c -- A FORSP interpreter */
+/* Original author(s): xorvoid [[https://github.com/xorvoid]], Anthony Bonkoski [[xorvoid.com]] */
+/* Comments: */
+
+/*   - Tuesday, June 18, 2024. Changed command line args processing to */
+/*     input FORSP source code as a string rather than as a */
+/*     file. Compiles OK to WASM via Emscripten with executables both in */
+/*     Wasmer and Node. */
+
 #include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
