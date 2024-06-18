@@ -1,5 +1,7 @@
 # Forsp: A Forth+Lisp Hybrid Lambda Calculus Language
 
+**Original README from xorvoid.**
+
 Forsp is a hybrid language combining Forth and Lisp.
 
 Forsp is a minimalist language.
