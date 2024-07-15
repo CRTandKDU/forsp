@@ -2,4 +2,4 @@
 \#*#
 forsp.[exe|js|wasm]
 *.dSYM/
-examples/
+
