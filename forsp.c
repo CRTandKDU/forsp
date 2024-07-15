@@ -7,6 +7,8 @@
 /*     file. Compiles OK to WASM via Emscripten with executables both in */
 /*     Wasmer and Node. */
 
+/*   - Monday, July 15, 2024. Elided 'printf', added 'emit' and 'cr' instead. */
+
 #include <assert.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -395,6 +397,12 @@ void print_recurse(obj_t *obj)
 void print(obj_t *obj)
 {
   print_recurse(obj);
+  /* printf("\n"); */
+  printf(" ");
+}
+
+void cr()
+{
   printf("\n");
 }
 
@@ -402,7 +410,7 @@ void print(obj_t *obj)
  * Environment
  ******************************************************************/
 
-/* Environment is jsut a simple list of key-val (dotted) pairs */
+/* Environment is just a simple list of key-val (dotted) pairs */
 
 obj_t *env_find(obj_t *env, obj_t *key)
 {
@@ -533,6 +541,10 @@ void prim_nand(obj_t **_)  { obj_t *a, *b; b = pop(); a = pop(); push(make_num(~
 void prim_lsh(obj_t **_)   { obj_t *a, *b; b = pop(); a = pop(); push(make_num(obj_i64(a) << obj_i64(b))); }
 void prim_rsh(obj_t **_)   { obj_t *a, *b; b = pop(); a = pop(); push(make_num(obj_i64(a) >> obj_i64(b))); }
 
+/* Ancillaries -- JMC Friday, July 12, 2024 */
+void prim_cr(obj_t **_)  { cr(); }
+void prim_emit(obj_t **_) { obj_t *c; c = pop(); putchar( obj_i64(c) );}
+
 #if USE_LOWLEVEL
 /* Low-level primitives */
 void prim_ptr_state(obj_t **_)    { push(make_num((int64_t)state)); }
@@ -599,6 +611,10 @@ void setup( char *input_path )
   env = env_define_prim(env, "read",  &prim_read);
   env = env_define_prim(env, "print", &prim_print);
 
+  // Ancillaries -- JMC Friday, July 12, 2024 
+  env = env_define_prim(env, "cr",    &prim_cr);
+  env = env_define_prim(env, "emit",  &prim_emit);
+  
   // Extra primitives
   env = env_define_prim(env, "stack", &prim_stack);
   env = env_define_prim(env, "env",   &prim_env);
